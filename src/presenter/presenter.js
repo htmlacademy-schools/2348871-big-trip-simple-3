@@ -2,6 +2,7 @@ import PointView from '../view/route-list-view.js';
 import RedactionView from '../view/form-edit-view.js';
 import SortingView from '../view/sort-view.js';
 import TripEventsView from '../view/event-list-view.js';
+import EmptyListView from '../view/empty-list-view.js';
 import {render} from '../render.js';
 
 export default class Presenter {
@@ -17,13 +18,16 @@ export default class Presenter {
 
     this.routePoints = this.tripModel.points;
 
-    render(new SortingView(), this.container);
-    render(this.#pointsList, this.container);
 
-    for (let i = 0; i < this.routePoints.length; i++) {
-      this.#renderPoint(this.routePoints[i]);
+    if (this.routePoints.length === 0) {
+      render(new EmptyListView(), this.container);
+    } else {
+      render(new SortingView(), this.container);
+      render(this.#pointsList, this.container);
+      for (let i = 0; i < this.routePoints.length; i++) {
+        this.#renderPoint(this.routePoints[i]);
+      }
     }
-
   }
 
   #renderPoint(point) {
