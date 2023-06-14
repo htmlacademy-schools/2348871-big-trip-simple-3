@@ -1,5 +1,5 @@
 import { getRandomInt } from '../util.js';
-import {TYPES, CITIES, getArrayFromType, DESCRIPTION} from './const.js';
+import {TYPES, CITIES, getArrayFromType, DESCRIPTION, SortingType} from './const.js';
 import { getDates, isPassed } from '../data-api.js';
 import { FilterType } from './const.js';
 
@@ -46,6 +46,18 @@ const filter = {
   [FilterType.FUTURE]: (points) => points.filter((point) => isPassed(point.dateFrom))
 };
 
+const sort = {
+  [SortingType.DAY]: (points) => points,
+  [SortingType.EVENT]: (points) => points,
+  [SortingType.TIME]: (points) => points,
+  [SortingType.PRICE]: (points) => points,
+  [SortingType.OFFERS]: (points) => points,
+};
+
+export const generateSort = (points) => Object.entries(sort).map(([sortName, sortPoints]) => ({
+  name: sortName,
+  count: sortPoints(points).length
+}));
 
 export const generateFilter = (points) => Object.entries(filter).map(([filterName, filterPoints]) => ({
   name: filterName,

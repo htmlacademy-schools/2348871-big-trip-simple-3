@@ -1,4 +1,4 @@
-import Presenter from './presenter/presenter.js';
+import Presenter from './presenter/tripPresenter.js';
 import FiltersView from './view/filter-view.js';
 import TripModel from './model/tripModel.js';
 import { generateFilter } from './mocks/mock.js';
