@@ -1,6 +1,7 @@
 import { getRandomInt } from '../util.js';
 import {TYPES, CITIES, getArrayFromType, DESCRIPTION} from './const.js';
-import { getDates } from '../data-api.js';
+import { getDates, isPassed } from '../data-api.js';
+import { FilterType } from './const.js';
 
 let i = 0;
 let pointId = 0;
@@ -39,3 +40,14 @@ export const generatePoint = () => {
     offers: offersForType.slice(getRandomInt(0, offersForType.length - 1))
   };
 };
+
+const filter = {
+  [FilterType.ALL]: (points) => points,
+  [FilterType.FUTURE]: (points) => points.filter((point) => isPassed(point.dateFrom))
+};
+
+
+export const generateFilter = (points) => Object.entries(filter).map(([filterName, filterPoints]) => ({
+  name: filterName,
+  count: filterPoints(points).length,
+}));

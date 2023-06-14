@@ -100,3 +100,8 @@ export const getArrayFromType = (type) => {
       return restaurantOffers;
   }
 };
+
+export const FilterType = {
+  ALL: 'everything',
+  FUTURE: 'future',
+};
