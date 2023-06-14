@@ -14,3 +14,7 @@ export const updateItem = (items, update) => {
     ...items.slice(index + 1),
   ];
 };
+
+export const sortByDay = (pa, pb) => pa.dateFrom.toDate() - pb.dateFrom.toDate();
+
+export const sortByPrice = (pa, pb) => pa.price - pb.price;
