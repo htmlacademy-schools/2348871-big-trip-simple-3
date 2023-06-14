@@ -1,7 +1,7 @@
 import { getOfferName, getOfferPrice } from '../mocks/const.js';
-import { createElement } from '../render.js';
 import { fullDate, getTime, getWithoutTime, shortDate } from '../data-api.js';
 import { getDestById } from '../mocks/mock.js';
+import AbstractView from '../framework/view/abstract-view.js';
 
 const createOfferTemplate = (offerIds) => offerIds.map((id) => `<li class="event__offer">
   <span class="event__offer-title">${getOfferName(id)}</span>
@@ -48,27 +48,26 @@ const pathPoint = (point) => {
   </li>`;};
 
 
-export default class PointView {
-
-  #element = null;
+export default class PointView extends AbstractView {
 
   constructor(point) {
+    super();
     this.point = point;
+    this.element.querySelector('.event__rollup-btn').addEventListener('click', this.#clickHandler);
   }
 
   get template() {
     return pathPoint(this.point);
   }
 
-  get element() {
-    if (!this.#element) {
-      this.#element = createElement(this.template);
-    }
-    return this.#element;
-  }
+  setClickHandler = (callback) => {
+    this._callback.click = callback;
+  };
 
-  removeElement() {
-    this.#element = null;
-  }
+  #clickHandler = (evt) => {
+    evt.preventDefault();
+    this._callback.click();
+  };
+
 }
 
