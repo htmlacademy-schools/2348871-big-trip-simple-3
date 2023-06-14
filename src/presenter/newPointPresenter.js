@@ -56,7 +56,7 @@ export default class NewPointPresenter {
   };
 
   #escKeyDownHandler = (evt) => {
-    if (evt.key === 'Escape' || evt.key === 'Esc') {
+    if (evt.keyCode === 27) {
       evt.preventDefault();
       this.destroy();
     }
