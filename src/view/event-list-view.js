@@ -1,15 +1,24 @@
+import {createElement, render} from '../framework/render.js';
 import AbstractView from '../framework/view/abstract-view.js';
 
-const createTripEventsTemplate = () => (
+const createPointListTemplate = () =>
   `<ul class="trip-events__list">
-  </ul>`
-);
+  </ul>`;
 
-export default class TripEventsView extends AbstractView {
+const createPointListItemTemplate = () =>
+  `<li class="trip-events__item">
+  </li>`;
 
-  get template () {
-    return createTripEventsTemplate;
+
+export default class PointListView extends AbstractView {
+  get template() {
+    return createPointListTemplate();
   }
 
+  addComponent(component) {
+    const li = createElement(createPointListItemTemplate());
+    render(component, li);
+    this.element.append(li);
+  }
 }
 
