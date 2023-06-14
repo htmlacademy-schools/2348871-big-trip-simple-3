@@ -50,3 +50,11 @@ export const sortPointsByDay = (pa, pb) => dayjs(pa.date_from).toDate() - dayjs(
 export const sortPointsByPrice = (pa, pb) => pb.base_price - pa.base_price;
 
 export const getIdFromTag = (tag) => +tag.id.split('-').slice(-1);
+
+export const getAvailableOffers = (type, offers) => {
+  for (const category of offers) {
+    if (category.type === type) {
+      return category.offers;
+    }
+  }
+};

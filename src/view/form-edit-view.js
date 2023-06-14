@@ -1,8 +1,7 @@
 import AbstractStatefulView from '../framework/view/abstract-stateful-view.js';
 import { POINT_TYPES } from '../mocks/const.js';
-import { destinationsStorage, getDefaultPoint, offersStorage } from '../mocks/mock.js';
 import { compareDates, getFormattedDate, getIdFromTag, turnModelDateToFramework, validateNumber } from '../utils/util.js';
-
+import TripModel from '../model/tripModel.js';
 import flatpickr from 'flatpickr';
 import 'flatpickr/dist/flatpickr.min.css';
 
@@ -29,16 +28,19 @@ const createPointTypeListTemplate = (id) => (`
   </div>
 `);
 
-const createDestinationListTemplate = () => destinationsStorage.map((destination) => (`<option value="${destination.name}"></option>`)).join('');
+const createDestinationListTemplate = (availableDestinations) =>
+  availableDestinations
+    .map((destination) => (`<option value="${destination.name}"></option>`))
+    .join('');
 
-const createPointDestinationTemplate = (id, type, destination) => (`
+const createPointDestinationTemplate = (id, type, destination, availableDestinations) => (`
   <div class="event__field-group  event__field-group--destination">
     <label class="event__label  event__type-output" for="event-destination-${id}">
       ${type}
     </label>
     <input class="event__input  event__input--destination" id="event-destination-${id}" type="text" name="event-destination" value="${destination.name}" list="destination-list-${id}">
     <datalist id="destination-list-${id}">
-      ${createDestinationListTemplate()}
+      ${createDestinationListTemplate(availableDestinations)}
     </datalist>
   </div>
 `);
@@ -91,8 +93,7 @@ const createPointOffersTemplate = (stateOffers) => (`
 `);
 
 const getDestinationPicturesMarkup = (destination) => destination.pictures.map((pic) => `
-  <img class="event__photo" src="${pic.src}.jpg" alt="${pic.description}">
-`);
+  <img class="event__photo" src="${pic.src}" alt="${pic.description}">`).join('');
 
 const createPointDestDetailsTemplate = (destination) => (`
   <section class="event__section  event__section--destination">
@@ -106,11 +107,11 @@ const createPointDestDetailsTemplate = (destination) => (`
   </section>
 `);
 
-const createPointEditTemplate = (data) => {
-  const dataDestination = destinationsStorage[data.destination];
+const createPointEditTemplate = (data, availableDestinations) => {
+  const dataDestination = availableDestinations[data.destination - 1];
   const pointIconTemplate = createPointIconTemplate(data.id, data.type);
   const pointTypeListTemplate = createPointTypeListTemplate(data.id);
-  const pointDestinationTemplate = createPointDestinationTemplate(data.id, data.type, dataDestination);
+  const pointDestinationTemplate = createPointDestinationTemplate(data.id, data.type, dataDestination, availableDestinations);
   const pointTimeTemplate = createPointTimeTemplate(data.id, data.date_from, data.date_to);
   const pointPriceTemplate = createPointPriceTemplate(data.id, data.base_price);
   const pointOffersTemplate = createPointOffersTemplate(data.state_offers);
@@ -144,17 +145,21 @@ const createPointEditTemplate = (data) => {
 export default class RedactionView extends AbstractStatefulView {
   _state = null;
   #datepickers = [];
+  #availableOffers = [];
+  #availableDestinations = [];
 
-  constructor(point = getDefaultPoint()) {
+  constructor(point = TripModel.defaultPoint(), availableOffers = [], availableDestinations = []) {
     super();
-    this._state = RedactionView.parsePointToState(point);
+    this._state = RedactionView.parsePointToState(point, availableOffers);
+    this.#availableOffers = availableOffers;
+    this.#availableDestinations = availableDestinations;
 
     this.#setInnerHandlers();
     this.#setDatepickers();
   }
 
   get template() {
-    return createPointEditTemplate(this._state);
+    return createPointEditTemplate(this._state, this.#availableDestinations);
   }
 
   removeElement = () => {
@@ -166,8 +171,8 @@ export default class RedactionView extends AbstractStatefulView {
     }
   };
 
-  reset = (point) => {
-    this.updateElement(RedactionView.parsePointToState(point));
+  reset = (point, availableOffers) => {
+    this.updateElement(RedactionView.parsePointToState(point, availableOffers));
   };
 
   _restoreHandlers = () => {
@@ -175,6 +180,7 @@ export default class RedactionView extends AbstractStatefulView {
     this.#setDatepickers();
     this.setFormSubmitHandler(this._callback.formSubmit);
     this.setDeleteClickHandler(this._callback.deleteClick);
+    this.setFormResetHandler(this._callback.formReset);
   };
 
   #setInnerHandlers = () => {
@@ -260,12 +266,12 @@ export default class RedactionView extends AbstractStatefulView {
     });
   };
 
-  static getDestinationId = (destinationName) => destinationsStorage.map((current) => current.name).indexOf(destinationName);
+  static getDestinationId = (destinationName, availableDestinations) => availableDestinations.map((current) => current.name).indexOf(destinationName) + 1;
 
   #destinationHandler = (evt) => {
     evt.preventDefault();
     const destination = evt.target.value;
-    const index = RedactionView.getDestinationId(destination);
+    const index = RedactionView.getDestinationId(destination, this.#availableDestinations);
     if (index !== -1) {
       this.updateElement({
         'destination': index,
@@ -306,9 +312,9 @@ export default class RedactionView extends AbstractStatefulView {
     this._callback.deleteClick(RedactionView.parseStateToPoint(this._state));
   };
 
-  static parsePointToState = (point) => {
+  static parsePointToState = (point, availableOffers) => {
     const offs = [];
-    for (const off of Object.values(offersStorage)) {
+    for (const off of availableOffers) {
       offs.push({...off, 'isChecked': point.offers.includes(off.id)});
     }
     return {...point, 'state_offers': offs};
@@ -316,12 +322,7 @@ export default class RedactionView extends AbstractStatefulView {
 
   static parseStateToPoint = (state) => {
     const point = {...state};
-    const noffers = [];
-    point.state_offers.map((stoff) => {
-      if (stoff.isChecked) {
-        noffers.push(stoff.id);
-      }
-    });
+    const noffers = point.state_offers.filter((stoff) => stoff.isChecked);
     point.offers = noffers;
     delete point.state_offers;
     return point;

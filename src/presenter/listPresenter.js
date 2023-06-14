@@ -6,6 +6,8 @@ import PointPresenter from './pointPresenter.js';
 import { SortType, UserAction, UpdateType, FilterType } from '../mocks/const.js';
 import { sortPointsByDay, sortPointsByPrice, filter } from '../utils/util.js';
 import NewPointPresenter from './newPointPresenter.js';
+import LoadingView from '../view/loading-view.js';
+import {getAvailableOffers} from '../utils/util.js';
 
 export default class ListPresenter {
   #container = null;
@@ -16,12 +18,14 @@ export default class ListPresenter {
   #pointListComponent = new PointListView();
   #sortComponent = null;
   #noPointsComponent = null;
+  #loadingComponent = new LoadingView();
 
   #pointPresenter = new Map();
   #newPointPresenter = null;
 
   #currentSortType = SortType.DAY;
   #filterType = FilterType.EVERYTHING;
+  #isLoading = true;
 
   constructor(container, filterModel, pointsModel) {
     this.#container = container;
@@ -63,6 +67,11 @@ export default class ListPresenter {
   }
 
   #renderMain = () => {
+    render(this.#pointListComponent, this.#container);
+    if (this.#isLoading) {
+      this.#renderLoading();
+      return;
+    }
     if (this.points.length === 0) {
       this.#renderIfEmpty();
       return;
@@ -110,9 +119,17 @@ export default class ListPresenter {
         this.#clearAll({resetSortType: true});
         this.#renderMain();
         break;
+      case UpdateType.INIT:
+        this.#isLoading = false;
+        remove(this.#loadingComponent);
+        this.#renderMain();
+        break;
     }
   };
 
+  #renderLoading = () => {
+    render(this.#loadingComponent, this.#pointListComponent.element, RenderPosition.AFTERBEGIN); //.element
+  };
 
   #handleSortTypeChange = (sortType) => {
     if (this.#currentSortType === sortType) {
@@ -133,7 +150,9 @@ export default class ListPresenter {
 
   #renderListItemComponent = (point) => {
     const pointPresenter = new PointPresenter(this.#pointListComponent, this.#handleViewAction, this.#handleModeChange);
-    pointPresenter.init(point);
+    pointPresenter.init(point,
+      getAvailableOffers(point.type, this.#pointsModel.offers),
+      this.#pointsModel.destinations);
     this.#pointPresenter.set(point.id, pointPresenter);
   };
 
@@ -143,6 +162,7 @@ export default class ListPresenter {
     this.#pointPresenter.clear();
 
     remove(this.#sortComponent);
+    remove(this.#loadingComponent);
 
     if (this.#noPointsComponent) {
       remove(this.#noPointsComponent);
