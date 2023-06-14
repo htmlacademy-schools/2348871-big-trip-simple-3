@@ -15,3 +15,5 @@ export const getTime = (date) => date.format('HH:mm');
 export const getWithoutTime = (date) => date.format('YYYY-MM-DD');
 
 export const shortDate = (date) => date.format('MMM D');
+
+export const isPassed = (date) => date.isBefore(dayjs(), 'D') || date.isSame(dayjs(), 'D');
