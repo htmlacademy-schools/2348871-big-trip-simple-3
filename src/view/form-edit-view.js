@@ -146,7 +146,7 @@ export default class RedactionView extends AbstractView {
 
   #submitHandler = (evt) => {
     evt.preventDefault();
-    this._callback.formSubmit();
+    this._callback.formSubmit(this.point);
   };
 
   #clickHandler = (evt) => {

@@ -105,3 +105,11 @@ export const FilterType = {
   ALL: 'everything',
   FUTURE: 'future',
 };
+
+export const SortingType = {
+  DAY: 'day',
+  EVENT: 'event',
+  TIME: 'time',
+  PRICE: 'price',
+  OFFERS: 'offers',
+};
