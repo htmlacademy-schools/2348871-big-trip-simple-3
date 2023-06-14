@@ -1,7 +1,7 @@
-import { createElement } from '../render.js';
 import { getArrayFromType, getOfferName, getOfferPrice, CITIES } from '../mocks/const.js';
 import { fullDate } from '../data-api.js';
 import { getDestById } from '../mocks/mock.js';
+import AbstractView from '../framework/view/abstract-view';
 
 const createOfferTemplate = (offerIds, type) => getArrayFromType(type).map((offer) => {
   const ifChecked = offerIds.includes(offer) ? 'checked' : '';
@@ -24,7 +24,7 @@ const createPhotosTemplate = (destination) => destination.pictures.map((pic) =>
 
 const editMenu = (point) => {
   const destination = getDestById(point.destination);
-  return `<form class="event event--edit" action="#" method="post">
+  return `<li><form class="event event--edit" action="#" method="post">
 	<header class="event__header">
 	  <div class="event__type-wrapper">
 		<label class="event__type  event__type-btn" for="event-type-toggle-1">
@@ -120,14 +120,13 @@ const editMenu = (point) => {
     </div>
 	  </section>
 	</section>
-  </form>`;
+  </form></li>`;
 };
 
-export default class RedactionView {
-
-  #element = null;
+export default class RedactionView extends AbstractView {
 
   constructor(point) {
+    super();
     this.point = point;
   }
 
@@ -135,14 +134,23 @@ export default class RedactionView {
     return editMenu(this.point);
   }
 
-  get element() {
-    if (!this.#element) {
-      this.#element = createElement(this.template);
-    }
-    return this.#element;
-  }
+  setSubmitHandler = (callback) => {
+    this._callback.formSubmit = callback;
+    this.element.querySelector('.event--edit').addEventListener('submit', this.#submitHandler);
+  };
 
-  removeElement() {
-    this.#element = null;
-  }
+  setClickHandler = (callback) => {
+    this._callback.click = callback;
+    this.element.querySelector('.event__rollup-btn').addEventListener('click', this.#clickHandler);
+  };
+
+  #submitHandler = (evt) => {
+    evt.preventDefault();
+    this._callback.formSubmit();
+  };
+
+  #clickHandler = (evt) => {
+    evt.preventDefault();
+    this._callback.click();
+  };
 }
