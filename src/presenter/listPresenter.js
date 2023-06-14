@@ -43,9 +43,9 @@ export default class ListPresenter {
   }
 
   get points() {
-    this.#filterType = this.#filterModel.filter;
+    const filterType = this.#filterModel.filter;
     const points = this.#pointsModel.points;
-    const filteredPoints = filter[this.#filterType](points);
+    const filteredPoints = filter[filterType](points);
 
     switch (this.#currentSortType) {
       case SortType.DAY:
