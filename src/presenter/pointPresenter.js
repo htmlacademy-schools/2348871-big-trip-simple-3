@@ -1,7 +1,7 @@
 import {render, replace, remove} from '../framework/render.js';
 import PointView from '../view/route-list-view.js';
 import PointEditView from '../view/form-edit-view.js';
-import { UserAction, UpdateType } from '../mocks/const.js';
+import { UserAction, UpdateType } from '../const.js';
 import { compareDates } from '../utils/util.js';
 
 const Mode = {
@@ -20,7 +20,6 @@ export default class PointPresenter {
   #point = null;
   #mode = Mode.DEFAULT;
   #availableOffers = [];
-  #availableDestinations = [];
 
   constructor(pointListContainer, changeData, changeMode) {
     this.#pointListContainer = pointListContainer;
@@ -31,7 +30,6 @@ export default class PointPresenter {
   init(point, availableOffers, availableDestinations) {
     this.#point = point;
     this.#availableOffers = availableOffers;
-    this.#availableDestinations = availableDestinations;
 
     const prevPointComponent = this.#pointComponent;
     const prevPointEditComponent = this.#pointEditComponent;
@@ -54,7 +52,8 @@ export default class PointPresenter {
     }
 
     if (this.#mode === Mode.EDITING) {
-      replace(this.#pointEditComponent, prevPointEditComponent);
+      replace(this.#pointComponent, prevPointEditComponent);
+      this.#mode = Mode.DEFAULT;
     }
 
     if (this.#pointListContainer.element.contains(prevPointComponent.element)) {
@@ -68,6 +67,41 @@ export default class PointPresenter {
     remove(prevPointComponent);
     remove(prevPointEditComponent);
   }
+
+  setSaving = () => {
+    if (this.#mode === Mode.EDITING) {
+      this.#pointEditComponent.updateElement({
+        isDisabled: true,
+        isSaving: true,
+      });
+    }
+  };
+
+  setDeleting = () => {
+    if (this.#mode === Mode.EDITING) {
+      this.#pointEditComponent.updateElement({
+        isDisabled: true,
+        isDeleting: true,
+      });
+    }
+  };
+
+  setAborting = () => {
+    if (this.#mode === Mode.DEFAULT) {
+      this.#pointComponent.shake();
+      return;
+    }
+
+    const resetFormState = () => {
+      this.#pointEditComponent.updateElement({
+        isDisabled: false,
+        isSaving: false,
+        isDeleting: false,
+      });
+    };
+
+    this.#pointEditComponent.shake(resetFormState);
+  };
 
   resetView = () => {
     if (this.#mode !== Mode.DEFAULT) {
@@ -107,7 +141,7 @@ export default class PointPresenter {
   };
 
   #handleFormSubmit = (update) => {
-    const isMinorUpdate = compareDates(update.date_from); // possible filter problems later
+    const isMinorUpdate = compareDates(update.date_from);
     this.#changeData(
       UserAction.UPDATE_POINT,
       isMinorUpdate ? UpdateType.MINOR : UpdateType.PATCH,

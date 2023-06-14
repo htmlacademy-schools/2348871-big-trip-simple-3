@@ -1,4 +1,4 @@
-import { FilterType } from '../mocks/const.js';
+import { FilterType } from '../const.js';
 import AbstractView from '../framework/view/abstract-view.js';
 
 const messages = {

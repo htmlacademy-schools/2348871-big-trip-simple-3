@@ -1,13 +1,13 @@
 import {render, replace, remove} from '../framework/render.js';
-import FilterFormView from '../view/filter-view.js';
-import {FilterType, UpdateType} from '../mocks/const.js';
+import FilterView from '../view/filter-view.js';
+import {FilterType, UpdateType} from '../const.js';
 
 export default class FilterPresenter {
   #filterContainer = null;
+  #filterComponent = null;
+
   #filterModel = null;
   #pointsModel = null;
-
-  #filterComponent = null;
 
   constructor(filterContainer, filterModel, pointsModel) {
     this.#filterContainer = filterContainer;
@@ -35,7 +35,7 @@ export default class FilterPresenter {
     const filters = this.filters;
     const prevFilterComponent = this.#filterComponent;
 
-    this.#filterComponent = new FilterFormView(filters, this.#filterModel.filter);
+    this.#filterComponent = new FilterView(filters, this.#filterModel.filter);
     this.#filterComponent.setFilterTypeChangeHandler(this.#handleFilterTypeChange);
 
     if (prevFilterComponent === null) {
