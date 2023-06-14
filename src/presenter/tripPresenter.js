@@ -1,19 +1,21 @@
 import SortingView from '../view/sort-view.js';
 import TripEventsView from '../view/event-list-view.js';
-import {render} from '../framework/render.js';
-import { generateSort } from '../mocks/mock.js';
+import {render, remove} from '../framework/render.js';
 import EmptyListView from '../view/empty-list-view.js';
 import PointPresenter from './pointPresenter.js';
-import { updateItem } from '../util.js';
+import { sortByDay, sortByPrice, updateItem } from '../util.js';
+import { SortingType } from '../mocks/const.js';
 
 export default class Presenter {
 
   #pointsListComponent = new TripEventsView();
   #emptyListComponent = new EmptyListView();
+  sortingComponent = new SortingView();
   #container = null;
   #tripModel = null;
   #pointsList = [];
   #pointPresenter = new Map();
+  #currentSortType = SortingType.DAY;
 
   constructor(container, tripModel) {
     this.#container = container;
@@ -23,7 +25,6 @@ export default class Presenter {
   init() {
 
     this.#pointsList = this.#tripModel.points;
-    this.sortingComponent = new SortingView(generateSort(this.#pointsList));
     this.#renderPage();
   }
 
@@ -38,6 +39,7 @@ export default class Presenter {
   }
 
   #renderSort() {
+    this.sortingComponent.setSortTypeChangeHandler(this.#handleSortTypeChange);
     render(this.sortingComponent, this.#container);
   }
 
@@ -55,17 +57,49 @@ export default class Presenter {
     this.#pointPresenter.forEach((presenter) => presenter.resetView());
   };
 
-  #renderPage() {
-    this.#renderSort();
-    render(this.#pointsListComponent, this.#container);
-    if(this.#pointsList.length === 0) {
-      this.#renderEmptyList();
-    } else {
-      for (let i = 0; i < this.#pointsList.length; i++) {
-        this.#renderPoint(this.#pointsList[i]);
-      }
+  #sortPoints = (sortType) => {
+    switch(sortType) {
+      case SortingType.DAY:
+        this.#pointsList.sort(sortByDay);
+        break;
+      case SortingType.PRICE:
+        this.#pointsList.sort(sortByPrice);
+        break;
+    }
+    this.#currentSortType = sortType;
+  };
+
+  #handleSortTypeChange = (sortType) => {
+    if(this.#currentSortType === sortType) {
+      return;
     }
 
+    this.#sortPoints(sortType);
+    this.#updateSortMarkup();
+    this.#clearPointList();
+    this.#renderList();
+  };
+
+  #updateSortMarkup = () => {
+    remove(this.sortingComponent);
+    this.#renderSort();
+  };
+
+  #renderList = () => {
+    render(this.#pointsListComponent, this.#container);
+    for (let i = 0; i < this.#pointsList.length; i++) {
+      this.#renderPoint(this.#pointsList[i]);
+    }
+  };
+
+
+  #renderPage() {
+    if(this.#pointsList.length === 0) {
+      this.#renderEmptyList();
+      return;
+    }
+    this.#renderSort(this.#currentSortType);
+    this.#renderList();
   }
 
 }
