@@ -1,12 +1,12 @@
-const POINT_TYPES = ['taxi', 'bus', 'train', 'ship', 'drive', 'flight', 'check-in', 'sightseeing', 'restaurant'];
-const MODEL_DATE_FORMAT = 'YYYY-MM-DDTHH:mm';
+export const POINT_TYPES = ['taxi', 'bus', 'train', 'ship', 'drive', 'flight', 'check-in', 'sightseeing', 'restaurant'];
+export const MODEL_DATE_FORMAT = 'YYYY-MM-DDTHH:mm';
 
-const FilterType = {
+export const FilterType = {
   EVERYTHING: 'everything',
   FUTURE: 'future',
 };
 
-const SortType = {
+export const SortType = {
   DAY: 'day',
   EVENT: 'event',
   TIME: 'time',
@@ -14,4 +14,15 @@ const SortType = {
   OFFERS: 'offers'
 };
 
-export {POINT_TYPES, MODEL_DATE_FORMAT, FilterType, SortType};
+export const UserAction = {
+  UPDATE_POINT: 'UPDATE_POINT',
+  ADD_POINT: 'ADD_POINT',
+  DELETE_POINT: 'DELETE_POINT',
+};
+
+export const UpdateType = {
+  PATCH: 'PATCH',
+  MINOR: 'MINOR',
+  MAJOR: 'MAJOR',
+};
+
